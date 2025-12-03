@@ -1,5 +1,19 @@
 // content.js
 
+// --- CONFIGURATION ---
+const DOMAINS = {
+    YOUTUBE: 'youtube.com',
+    INSTAGRAM: 'instagram.com',
+    TIKTOK: 'tiktok.com'
+};
+
+// Temps en millisecondes (1000 ms * 60 s * minutes)
+const THRESHOLDS = {
+    [DOMAINS.YOUTUBE]: 60 * 60 * 1000,      // 1 Heure
+    [DOMAINS.INSTAGRAM]: 30 * 60 * 1000,    // 30 Minutes
+    [DOMAINS.TIKTOK]: 30 * 60 * 1000        // 30 Minutes
+};
+
 // --- DATABASE OF 20 HCI QUESTIONS ---
 const quizData = [
     {
@@ -204,18 +218,60 @@ const quizData = [
     }
 ];
 
-// --- LOGIC ---
+// --- LOGIC DE NAVIGATION ---
+let lastUrl = location.href;
 
-// 1. Check if unlocked in this session
-if (!sessionStorage.getItem("focus_unlocked")) {
-    initFocusApp();
+// 1. Initial Check (Au chargement de la page)
+checkAndShowOverlay();
+
+// 2. Intervalle pour détecter les changements d'URL (SPA Navigation)
+// Cela permet de détecter quand on clique sur une nouvelle vidéo YouTube sans recharger la page
+setInterval(() => {
+    if (location.href !== lastUrl) {
+        lastUrl = location.href;
+        // On relance la vérification à chaque changement de page/vidéo
+        checkAndShowOverlay();
+    }
+}, 1000);
+
+
+// --- FONCTIONS ---
+
+function getCurrentDomainKey() {
+    const hostname = window.location.hostname;
+    if (hostname.includes('youtube.com')) return DOMAINS.YOUTUBE;
+    if (hostname.includes('instagram.com')) return DOMAINS.INSTAGRAM;
+    if (hostname.includes('tiktok.com')) return DOMAINS.TIKTOK;
+    return null;
+}
+
+function checkAndShowOverlay() {
+    const domain = getCurrentDomainKey();
+    if (!domain) return; // Si on n'est pas sur un site ciblé, on ne fait rien
+
+    // Récupérer le timestamp du dernier succès pour ce domaine précis
+    const lastUnlockStr = localStorage.getItem(`focus_unlock_time_${domain}`);
+    const now = Date.now();
+    const threshold = THRESHOLDS[domain];
+
+    // Logique de verrouillage :
+    // 1. Si pas de timestamp (jamais répondu) -> BLOQUER
+    // 2. Si (Maintenant - DernierSuccès) > Seuil -> BLOQUER
+    if (!lastUnlockStr || (now - parseInt(lastUnlockStr, 10)) > threshold) {
+        
+        // On vérifie qu'un overlay n'est pas déjà affiché pour éviter les doublons
+        if (!document.getElementById("focus-app-overlay")) {
+            initFocusApp();
+        }
+    } else {
+        // Optionnel : On peut loguer le temps restant pour le debug
+        // console.log(`Focus App: Unlocked. Time remaining: ${(threshold - (now - lastUnlockStr))/60000} mins`);
+    }
 }
 
 function initFocusApp() {
-    // Select a random question
     const randomIndex = Math.floor(Math.random() * quizData.length);
     const currentQuestion = quizData[randomIndex];
-
     createOverlay(currentQuestion);
 }
 
@@ -223,7 +279,6 @@ function createOverlay(questionData) {
     const overlay = document.createElement("div");
     overlay.id = "focus-app-overlay";
 
-    // Generate Options HTML buttons
     let optionsHtml = '<div class="focus-options">';
     questionData.options.forEach((opt, index) => {
         optionsHtml += `<button class="focus-option-btn" data-index="${index}">${opt}</button>`;
@@ -232,21 +287,18 @@ function createOverlay(questionData) {
 
     overlay.innerHTML = `
     <div class="focus-header">WAIT!</div>
-    
     <div class="focus-question-container">
         <p class="focus-question"><strong>Q:</strong> ${questionData.q}</p>
         ${optionsHtml}
     </div>
-    
     <div class="asian-mum-quote">
-       <span style="font-size: 24px;">👀</span> "Why you on this site? Go study!"
+       <span style="font-size: 24px;">👀</span> "I am watching you... Answer correctly."
     </div>
   `;
 
     document.body.appendChild(overlay);
-    document.body.style.overflow = "hidden"; // Stop scrolling
+    document.body.style.overflow = "hidden";
 
-    // Add Click Listeners to Options
     const buttons = overlay.querySelectorAll('.focus-option-btn');
     buttons.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -259,20 +311,25 @@ function handleAnswer(clickedBtn, correctIndex, overlay) {
     const selectedIndex = parseInt(clickedBtn.getAttribute('data-index'));
 
     if (selectedIndex === correctIndex) {
-        // Correct Answer
         clickedBtn.classList.add('correct');
         setTimeout(() => {
             alert("CORRECT! \nAsian Mum is proud (for now).\nYou may proceed.");
             overlay.remove();
             document.body.style.overflow = "auto";
-            sessionStorage.setItem("focus_unlocked", "true");
+            
+            // --- SAUVEGARDE DU TEMPS ---
+            // On enregistre l'heure actuelle comme nouveau point de départ
+            const domain = getCurrentDomainKey();
+            if (domain) {
+                localStorage.setItem(`focus_unlock_time_${domain}`, Date.now().toString());
+            }
+            
         }, 300);
     } else {
-        // Wrong Answer
         clickedBtn.classList.add('wrong');
         setTimeout(() => {
-            alert("WRONG! \nFailure is not an option. Try again.");
-            clickedBtn.classList.remove('wrong'); // Reset for retry
+            alert("WRONG!\nFailure is not an option. Try again.");
+            clickedBtn.classList.remove('wrong');
         }, 300);
     }
 }

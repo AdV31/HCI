@@ -1,0 +1,101 @@
+/* style.css */
+#focus-app-overlay {
+  /* CRITICAL: Resets all inheritable properties to their initial values. */
+  all: initial !important; 
+  
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: #fcfcfc !important; /* Force light background */
+  z-index: 999999 !important; /* Ensure it stays on top of everything */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Redefine essential styles after reset */
+  font-family: 'Arial', sans-serif !important; 
+  color: #000 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
+}
+
+.focus-header {
+  font-size: 3.5rem !important;
+  font-weight: bold !important;
+  color: #c0392b !important; 
+  margin: 0 0 20px 0 !important;
+  background-color: #ecf0f1 !important;
+  padding: 10px 40px !important;
+  border: 2px solid #000 !important;
+  box-shadow: 5px 5px 0px #000 !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+}
+
+.focus-question-container {
+  background: white !important;
+  padding: 30px !important;
+  border: 2px solid #000 !important;
+  border-radius: 10px !important;
+  max-width: 600px !important;
+  width: 90% !important;
+  box-shadow: 10px 10px 0px rgba(0,0,0,0.1) !important;
+  margin: 0 !important;
+}
+
+.focus-question, .focus-question strong {
+  font-size: 1.4rem !important;
+  margin-bottom: 25px !important;
+  line-height: 1.4 !important;
+  font-weight: bold !important;
+  color: #000 !important; /* Ensure text color is black */
+}
+
+.focus-options {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.focus-option-btn {
+  padding: 15px !important;
+  font-size: 1.1rem !important;
+  background-color: #fff !important;
+  border: 2px solid #ccc !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  text-align: left !important;
+  color: #000 !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+}
+
+.focus-option-btn:hover {
+  background-color: #f0f0f0 !important;
+  border-color: #333 !important;
+}
+
+.focus-option-btn.correct {
+  background-color: #2ecc71 !important;
+  color: white !important;
+  border-color: #27ae60 !important;
+}
+
+.focus-option-btn.wrong {
+  background-color: #e74c3c !important;
+  color: white !important;
+  border-color: #c0392b !important;
+}
+
+.asian-mum-quote {
+  margin-top: 30px !important;
+  font-style: italic !important;
+  color: #555 !important;
+  font-size: 1.1rem !important;
+}

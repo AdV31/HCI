@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Focus App - Study Guardian",
+  "version": "1.0",
+  "description": "An extension that blocks distractions and enforces retrieval practice before access.",
+  "permissions": ["activeTab", "scripting"],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/*",
+        "*://*.instagram.com/*",
+        "*://*.tiktok.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["style.css"]
+    }
+  ]
+}
